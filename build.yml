@@ -1,0 +1,50 @@
+name: Build JungleScript
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build JungleScript
+        run: |
+          pyinstaller --onefile junglescript.py
+
+      - name: Rename executable
+        run: |
+          ren dist\junglescript.exe junglescript.exe
+
+      - name: Build Installer
+        run: |
+          pyinstaller --onefile --name JungleScriptInstaller installer.py
+
+      - name: Copy JungleScript into build directory
+        run: |
+          copy dist\junglescript.exe .
+
+      - name: Build final installer
+        run: |
+          pyinstaller --onefile --name JungleScriptInstaller installer.py
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: JungleScript-Windows
+          path: dist/JungleScriptInstaller.exe
